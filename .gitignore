@@ -1,0 +1,9 @@
+﻿.vs
+.idea
+
+*.user
+
+src/obj
+src/bin
+
+packages

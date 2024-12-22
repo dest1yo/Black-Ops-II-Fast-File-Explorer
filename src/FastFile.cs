@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using Ionic.Zlib;
+using static BlackOps2Explorer.EndiannessAwareBinaryReader;
 
 namespace BlackOps2Explorer
 {
@@ -19,21 +20,39 @@ namespace BlackOps2Explorer
             }
         }
 
-        private const long SignedMagic = 0x3030313066664154;
-        private const long UnsignedMagic = 0x3030317566664154;
+        private const long SignedMagic = 0x3030313066664154; // TAff0100
+        private const long UnsignedMagic = 0x3030317566664154; // TAffu100
+        private const long UnknownXMagic = 0x3030317866664154; // TAffx100
+        private const int XBOXVersion = 0x92;
         private const int PCVersion = 0x93;
         private const int ScanChunkSize = 0x500000;
 
-        private static readonly byte[] FastFileKey = new byte[]
+        private static readonly byte[] PCFastFileKey = new byte[]
         {
             0x64, 0x1D, 0x8A, 0x2F, 0xE3, 0x1D, 0x3A, 0xA6, 0x36, 0x22, 0xBB, 0xC9, 0xCE, 
             0x85, 0x87, 0x22, 0x9D, 0x42, 0xB0, 0xF8, 0xED, 0x9B, 0x92, 0x41, 0x30, 0xBF, 
             0x88, 0xB6, 0x5E, 0xDC, 0x50, 0xBE
         };
 
+        private static readonly byte[] XBOXFastFileKey = new byte[]
+        {
+            0x0E, 0x50, 0xF4, 0x9F, 0x41, 0x23, 0x17, 0x09, 0x60, 0x38, 0x66, 0x56, 0x22,
+            0xDD, 0x09, 0x13, 0x32, 0xA2, 0x09, 0xBA, 0x0A, 0x05, 0xA0, 0x0E, 0x13, 0x77,
+            0xCE, 0xDB, 0x0A, 0x3C, 0xB1, 0xD3
+        };
+        public enum FastFileVersion
+        {
+            PC,
+            XBOX,
+        }
+
+
         private Stream _stream;
-        private BinaryReader _reader;
+        private EndiannessAwareBinaryReader _reader;
         private string _path = string.Empty;
+        private static byte[] _currentFastFileKey;
+        private FastFileVersion _fastfileVerison;
+        private Endianness _endianness;
 
         public event EventHandler<AssetFoundEventArgs> AssetFound;
         public List<XAsset> Assets { get; private set; }
@@ -48,7 +67,7 @@ namespace BlackOps2Explorer
         private FastFile(Stream stream)
         {
             _stream = stream;
-            _reader = new BinaryReader(_stream);
+            _reader = new EndiannessAwareBinaryReader(_stream);
 
             Assets = new List<XAsset>();
             Strings = new List<string>();
@@ -59,13 +78,30 @@ namespace BlackOps2Explorer
             // Check the TAff magic.
             long magic = _reader.ReadInt64();
 
-            if(magic != SignedMagic && magic != UnsignedMagic)
+            if (magic == UnknownXMagic)
+                throw new Exception("The file is not a supported fast file.");
+
+            if (magic != SignedMagic && magic != UnsignedMagic)
                 throw new Exception("The file is not a valid/supported fast file.");
 
             // Check the fast file version.
-            int version = _reader.ReadInt32();
-            if(version != PCVersion)
+            var version = _reader.ReadUInt32();
+            if (MemoryUtil.ReverseEndianUInt32(version) == XBOXVersion)
+            {
+                _fastfileVerison = FastFileVersion.XBOX;
+                _endianness = Endianness.Big;
+                _currentFastFileKey = XBOXFastFileKey;
+            }
+            else if (version == PCVersion)
+            {                
+                _fastfileVerison = FastFileVersion.PC;
+                _endianness = Endianness.Little;
+                _currentFastFileKey = PCFastFileKey;
+            }
+            else
                 throw new Exception("The fast file version is not supported.");
+
+            _reader.SetEndianness(_endianness);
 
             // Create a file containing the decompressed/decrypted zone file.
             string path = CreateZoneFile();
@@ -75,7 +111,7 @@ namespace BlackOps2Explorer
 
             // Create new streams for the zone file.
             _stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            _reader = new BinaryReader(_stream);
+            _reader = new EndiannessAwareBinaryReader(_stream, _endianness);
 
             // Read the zone information.
             _stream.Position = 0x28;
@@ -300,7 +336,7 @@ namespace BlackOps2Explorer
                 _stream.Position += 0x100;
 
                 int sectionIndex = 0;
-                var salsa = new Salsa20 { Key = FastFileKey };
+                var salsa = new Salsa20 { Key = _currentFastFileKey };
 
                 while (true)
                 {
