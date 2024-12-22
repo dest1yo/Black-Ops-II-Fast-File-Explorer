@@ -1,0 +1,11 @@
+﻿<Window x:Class="BlackOps2Explorer.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="About" Height="189" Width="378" ResizeMode="NoResize" Icon="/Black%20Ops%20II%20Fast%20File%20Explorer;component/logo.ico">
+    <Grid>
+        <Label Content="Black Ops II Fast File Explorer v1.1" Height="34" Name="titleLabel" VerticalAlignment="Top" FontWeight="Bold" FontSize="16" Margin="12,12,75,0" />
+        <Label Content="by master131" Height="27" HorizontalAlignment="Left" Margin="12,40,0,0" Name="versionLabel" VerticalAlignment="Top" Width="97" FontSize="14" />
+        <TextBlock Text="Big thanks to kokole for the fastfile decryption method.&#x0a;Code editing is powered by AvalonEdit." Height="50" HorizontalAlignment="Left" Margin="17,76,0,0" Name="aboutLabel" VerticalAlignment="Top" Width="332" FontSize="13" TextWrapping="Wrap" />
+        <Button Content="OK" Height="23" HorizontalAlignment="Right" Margin="0,122,12,0" Name="closeButton" VerticalAlignment="Top" Width="61" Click="closeButton_Click" />
+    </Grid>
+</Window>

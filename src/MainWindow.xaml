@@ -1,0 +1,53 @@
+﻿<Window x:Class="BlackOps2Explorer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:my="clr-namespace:BlackOps2Explorer"
+        Title="Black Ops II Fast File Explorer by master131" 
+        Height="400" Width="700" Icon="/Black%20Ops%20II%20Fast%20File%20Explorer;component/logo.ico" Background="#FFF0F0F0">
+    <Grid Background="#FFF0F0F0">
+        <Menu Height="27" HorizontalAlignment="Stretch" VerticalAlignment="Top" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Padding="5,5,0,0">
+            <MenuItem Header="File" Padding="6,0" VerticalAlignment="Center" VerticalContentAlignment="Center" Height="20">
+                <MenuItem Name="openFastFileItem" Header="_Open Fast File" InputGestureText="Ctrl+O" Click="openFastFileItem_Click" />
+                <Separator />
+                <MenuItem Name="exitMenuItem" Header="Exit" Click="exitMenuItem_Click" />
+            </MenuItem>
+            <MenuItem Header="Options" Padding="6,0" VerticalAlignment="Center" Height="20" >
+                <MenuItem Name="includeHLSLMenuItem" Header="Include HLSL Files" IsCheckable="True" />
+            </MenuItem>
+            <MenuItem Header="Help" Padding="6,0" VerticalAlignment="Center" VerticalContentAlignment="Center" Height="20">
+                <MenuItem Name="aboutMenuItem" Header="About" Click="aboutMenuItem_Click" />
+            </MenuItem>
+        </Menu>
+        
+        <StatusBar HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="24" Padding="10,0,0,2">
+            <StatusBarItem Name="loadingIconBarItem" Visibility="Hidden">
+                <Image Height="20" Width="18" my:ImageBehavior.AnimatedSource="load.gif" Stretch="None"></Image>
+            </StatusBarItem>
+            <StatusBarItem Name="statusBarItem" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" />
+        </StatusBar>
+        <Grid HorizontalAlignment="Stretch" Margin="12,30,12,26" VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="100"/>
+                <ColumnDefinition Width="2" />
+                <ColumnDefinition MinWidth="100" />
+            </Grid.ColumnDefinitions>
+            
+            <ListView Name="fileListView" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="fileListView_SelectionChanged">
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Export" Click="exportMenuItem_Click" />
+                        <MenuItem Header="Export All" Click="exportAllMenuItem_Click" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
+            </ListView>
+            <GridSplitter ResizeDirection="Columns" Grid.Column="1" ResizeBehavior="PreviousAndNext"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Border Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="#FFABADB3" BorderThickness="1">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <MediaElement Name="mainMediaElement" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" LoadedBehavior="Manual" UnloadedBehavior="Manual" />
+                    <avalonEdit:TextEditor xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit" Name="mainRichTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" ShowLineNumbers="True" FontFamily="Courier New" FontSize="14" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
